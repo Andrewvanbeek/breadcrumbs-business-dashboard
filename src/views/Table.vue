@@ -7,7 +7,7 @@
   >
     <template v-slot:top>
       <v-toolbar flat color="white">
-        <v-toolbar-title>Tables at Your Restaurant</v-toolbar-title>
+        <v-toolbar-title>Users at Your Table X</v-toolbar-title>
         <v-divider
           class="mx-4"
           inset
