@@ -12,7 +12,7 @@ Vue.use(VueRouter)
     component: Home
   },
   {
-    path: '/table/:id',
+    path: '/tables/:id',
     name: 'Table',
     component: Table
   },

@@ -1,28 +1,13 @@
 <template>
-  <v-data-table
-    :headers="headers"
-    :items="desserts"
-    sort-by="calories"
-    class="elevation-1"
-  >
+  <v-data-table :headers="headers" :items="desserts" sort-by="calories" class="elevation-1">
     <template v-slot:top>
       <v-toolbar flat color="white">
-        <v-toolbar-title>Users at Your Table X</v-toolbar-title>
-        <v-divider
-          class="mx-4"
-          inset
-          vertical
-        ></v-divider>
+        <v-toolbar-title>Users at {{table.name}}</v-toolbar-title>
+        <v-divider class="mx-4" inset vertical></v-divider>
         <v-spacer></v-spacer>
         <v-dialog v-model="dialog" max-width="500px">
           <template v-slot:activator="{ on, attrs }">
-            <v-btn
-              color="primary"
-              dark
-              class="mb-2"
-              v-bind="attrs"
-              v-on="on"
-            >New Table</v-btn>
+            <v-btn color="primary" dark class="mb-2" v-bind="attrs" v-on="on">New Table</v-btn>
           </template>
           <v-card>
             <v-card-title>
@@ -52,19 +37,8 @@
       </v-toolbar>
     </template>
     <template v-slot:item.actions="{ item }">
-      <v-icon
-        small
-        class="mr-2"
-        @click="editItem(item)"
-      >
-        mdi-pencil
-      </v-icon>
-      <v-icon
-        small
-        @click="deleteItem(item)"
-      >
-        mdi-delete
-      </v-icon>
+      <v-icon small class="mr-2" @click="editItem(item)">mdi-pencil</v-icon>
+      <v-icon small @click="deleteItem(item)">mdi-delete</v-icon>
     </template>
     <template v-slot:no-data>
       <v-btn color="primary" @click="initialize">Reset</v-btn>
@@ -73,88 +47,111 @@
 </template>
 
 <script>
-  export default {
-    data: () => ({
-      dialog: false,
-      headers: [
-        {
-          text: 'Table Name',
-          align: 'start',
-          sortable: false,
-          value: 'name',
-        },
-        { text: 'Occupancy Number', value: 'occupancy' },
-        { text: 'Actions', value: 'actions', sortable: false },
-      ],
-      desserts: [],
-      editedIndex: -1,
-      editedItem: {
-        name: '',
-        occupancy: ''
+export default {
+  data: () => ({
+    dialog: false,
+    table: {},
+    headers: [
+      {
+        text: "User Identifier",
+        align: "start",
+        sortable: false,
+        value: "id"
       },
-      defaultItem: {
-        name: '',
-        occupancy: 2
-      },
-    }),
-
-    computed: {
-      formTitle () {
-        return this.editedIndex === -1 ? 'New Item' : 'Edit Item'
-      },
+      { text: "Last Visit", value: "timestamp" },
+      { text: "Actions", value: "actions", sortable: false }
+    ],
+    desserts: [],
+    editedIndex: -1,
+    editedItem: {
+      name: "",
+      occupancy: ""
     },
+    defaultItem: {
+      name: "",
+      occupancy: 2
+    }
+  }),
 
-    watch: {
-      dialog (val) {
-        val || this.close()
-      },
-    },
+  computed: {
+    formTitle() {
+      return this.editedIndex === -1 ? "New Item" : "Edit Item";
+    }
+  },
 
-    created () {
-      this.initialize()
-    },
+  watch: {
+    dialog(val) {
+      val || this.close();
+    }
+  },
 
-    methods: {
-      initialize () {
-        this.desserts = [
-          {
-            name: 'Table 1',
-            occupancy: 2,
-            fat: 6.0,
-            carbs: 24,
-            protein: 4.0,
+  created() {
+    this.initialize();
+  },
+
+  methods: {
+    async initialize() {
+      var component = this;
+      var path = this.$router.currentRoute.path;
+      console.log(path.split("/"));
+      var doc = path.split("/")[2];
+      console.log(doc);
+      this.$firestore
+        .collection("tables")
+        .doc(doc)
+        .get()
+        .then(function(doc) {
+          if (doc.exists) {
+            component.table = doc.data();
+            console.log("Document data:", doc.data());
+          } else {
+            console.log("No such document!");
           }
-        ]
-      },
-
-      editItem (item) {
-        this.editedIndex = this.desserts.indexOf(item)
-        this.editedItem = Object.assign({}, item)
-        this.dialog = true
-      },
-
-      deleteItem (item) {
-        const index = this.desserts.indexOf(item)
-        confirm('Are you sure you want to delete this item?') && this.desserts.splice(index, 1)
-      },
-
-      close () {
-        this.dialog = false
-        this.$nextTick(() => {
-          this.editedItem = Object.assign({}, this.defaultItem)
-          this.editedIndex = -1
-        })
-      },
-
-      save () {
-        if (this.editedIndex > -1) {
-          Object.assign(this.desserts[this.editedIndex], this.editedItem)
-        } else {
-          this.desserts.push(this.editedItem)
-        }
-        this.close()
-      },
+        });
+      var users = [];
+      this.$firestore
+        .collection("tables")
+        .doc(doc)
+        .collection("users")
+        .get()
+        .then(querySnapshot => {
+          querySnapshot.forEach(doc => {
+              console.log(doc)
+            users.push({ id: doc.id, timestamp: doc.data().timestamp });
+          });
+        });
+        component.desserts = users
     },
+
+    editItem(item) {
+      this.editedIndex = this.desserts.indexOf(item);
+      this.editedItem = Object.assign({}, item);
+      this.dialog = true;
+    },
+
+    deleteItem(item) {
+      const index = this.desserts.indexOf(item);
+      confirm("Are you sure you want to delete this item?") &&
+        this.desserts.splice(index, 1);
+    },
+
+    close() {
+      this.dialog = false;
+      this.$nextTick(() => {
+        this.editedItem = Object.assign({}, this.defaultItem);
+        this.editedIndex = -1;
+      });
+    },
+
+    save() {
+      if (this.editedIndex > -1) {
+        Object.assign(this.desserts[this.editedIndex], this.editedItem);
+      } else {
+        this.desserts.push(this.editedItem);
+      }
+      this.close();
+    }
   }
+};
 </script>
 
