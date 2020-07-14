@@ -116,9 +116,20 @@ export default {
     },
 
     deleteItem(item) {
-      const index = this.desserts.indexOf(item);
-      confirm("Are you sure you want to delete this item?") &&
-        this.desserts.splice(index, 1);
+      var component = this;
+      var tableRef = component.$firestore
+        .collection("tables")
+        .doc(item.id);
+        const index = this.desserts.indexOf(item)
+        confirm('Are you sure you want to delete this item?') && tableRef
+        .delete()
+        .then(function() {
+          console.log("Document successfully deleted!");
+          component.desserts.splice(index, 1)
+        })
+        .catch(function(error) {
+          console.error("Error removing document: ", error);
+        });
     },
 
     close() {
@@ -138,8 +149,11 @@ export default {
         return tableRef
           .update(this.editedItem)
           .then(function() {
-            Object.assign(component.desserts[component.editedIndex], component.editedItem);
-            component.close()
+            Object.assign(
+              component.desserts[component.editedIndex],
+              component.editedItem
+            );
+            component.close();
           })
           .catch(function(error) {
             // The document probably doesn't exist.
