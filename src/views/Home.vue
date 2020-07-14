@@ -37,8 +37,10 @@
       </v-toolbar>
     </template>
     <template v-slot:item.actions="{ item }">
-      <v-icon small class="mr-2" @click="editItem(item)">mdi-pencil</v-icon>
-      <v-icon small @click="deleteItem(item)">mdi-delete</v-icon>
+      <v-btn icon><v-icon small class="mr-2" @click="editItem(item)">mdi-pencil</v-icon></v-btn>
+      <v-btn :to="{ name: 'Table', params: { id: item.id }}" icon><v-icon small>mdi-eye</v-icon></v-btn>
+      <v-btn icon><v-icon small @click="deleteItem(item)">mdi-delete</v-icon></v-btn>
+      
     </template>
     <template v-slot:no-data>
       <v-btn color="primary" @click="initialize">Reset</v-btn>
@@ -114,7 +116,6 @@ export default {
       this.editedItem = Object.assign({}, item);
       this.dialog = true;
     },
-
     deleteItem(item) {
       var component = this;
       var tableRef = component.$firestore
