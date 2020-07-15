@@ -1,39 +1,16 @@
 <template>
   <v-app id="inspire">
     <v-main>
-      <v-container
-        class="fill-height"
-        fluid
-      >
-        <v-row
-          align="center"
-          justify="center"
-        >
-          <v-col
-            cols="12"
-            sm="8"
-            md="4"
-          >
+      <v-container class="fill-height" fluid>
+        <v-row align="center" justify="center">
+          <v-col cols="12" sm="8" md="4">
             <v-card class="elevation-12">
-              <v-toolbar
-                color="primary"
-                dark
-                flat
-              >
+              <v-toolbar color="primary" dark flat>
                 <v-toolbar-title>Register Form</v-toolbar-title>
                 <v-spacer></v-spacer>
                 <v-tooltip bottom>
-                  <template v-slot:activator="{ on }">
-                    <v-btn
-                      :href="source"
-                      icon
-                      large
-                      target="_blank"
-                      v-on="on"
-                    >
-                      <v-icon>mdi-code-tags</v-icon>
-                    </v-btn>
-                  </template>
+                  <!-- <template v-slot:activator="{ on }">
+                  </template> -->
                   <span>Source</span>
                 </v-tooltip>
               </v-toolbar>
@@ -43,6 +20,7 @@
                     label="Login"
                     name="login"
                     prepend-icon="mdi-account"
+                    v-model="username"
                     type="text"
                   ></v-text-field>
 
@@ -52,25 +30,26 @@
                     name="password"
                     prepend-icon="mdi-lock"
                     type="password"
+                    v-model="password"
                   ></v-text-field>
-                       <v-text-field
-                    label="Login"
+                  <v-text-field
+                    label="Business Name"
                     name="login"
-                    prepend-icon="mdi-account"
+                    prepend-icon="mdi-google-my-business"
                     type="text"
                   ></v-text-field>
-                       <v-text-field
+                  <v-text-field
                     v-model="address"
-                    label="Login"
+                    label="Business Address"
                     name="login"
-                    prepend-icon="mdi-account"
+                    prepend-icon="mdi-google-my-business"
                     type="text"
                   ></v-text-field>
                 </v-form>
               </v-card-text>
               <v-card-actions>
                 <v-spacer></v-spacer>
-                <v-btn color="primary">Login</v-btn>
+                <v-btn @click="register()" color="primary">Register</v-btn>
               </v-card-actions>
             </v-card>
           </v-col>
@@ -81,7 +60,7 @@
 </template>
 
 <script>
- export default {
+export default {
   data: () => ({
     dialog: false,
     table: {},
@@ -96,6 +75,8 @@
       { text: "Last Visit", value: "timestamp" },
       { text: "Actions", value: "actions", sortable: false }
     ],
+    username: "",
+    password: "",
     desserts: [],
     editedIndex: -1,
     editedItem: {
@@ -107,7 +88,20 @@
       occupancy: 2
     }
   }),
-
+  methods: {
+    register() {
+      var component = this;
+      component.$firebase
+        .auth()
+        .createUserWithEmailAndPassword(component.username, component.password)
+        .catch(function(error) {
+          var errorCode = error.code;
+          var errorMessage = error.message;
+          console.log(errorCode);
+          console.log(errorMessage);
+        });
+    }
+  },
   computed: {
     formTitle() {
       return this.editedIndex === -1 ? "New Item" : "Edit Item";
@@ -121,7 +115,7 @@
   },
 
   created() {
-    this.initialize();
+    //this.initialize();
   }
 };
 </script>
