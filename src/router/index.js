@@ -4,8 +4,6 @@ import Home from '../views/Home.vue'
 import Table from '../views/Table.vue'
 import Login from '../views/Login.vue'
 import Register from '../views/Register.vue'
-import firebase from "firebase"
-
 
 Vue.use(VueRouter)
 
@@ -49,13 +47,15 @@ const router = new VueRouter({
 console.log("TESJOJFIOSHUI")
 
 router.beforeEach(async (to, from, next) => {
-  firebase.auth().onAuthStateChanged(async function(user) {
+  Vue.prototype.$firebase.auth().onAuthStateChanged(async function(user) {
     console.log("TESTING")
     var loggedIn = await user
     if (loggedIn) {
-      next()
+      console.log("user is still authenticated")
+      if (to.name === "Login") next({name: 'Home'})
+      next() // move on to the next page
     } else {
-      console.log("here")
+      console.log("user is logged out")
       if (to.name === "Register") next()
       else if( to.name !== 'Login') next({ name: 'Login' })
       else next()

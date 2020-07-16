@@ -35,6 +35,7 @@
                   <v-text-field
                     label="Business Name"
                     name="login"
+                    v-model="businessname"
                     prepend-icon="mdi-google-my-business"
                     type="text"
                   ></v-text-field>
@@ -64,7 +65,8 @@ export default {
   data: () => ({
     dialog: false,
     table: {},
-    address: "11986 Settlers Drive",
+    address: "",
+    businessname: "",
     headers: [
       {
         text: "User Identifier",
@@ -93,11 +95,14 @@ export default {
       var component = this;
       component.$firebase
         .auth()
-        .createUserWithEmailAndPassword(component.username, component.password)
+        .createUserWithEmailAndPassword(component.username, component.password).then(function(){
+            component.router.go("/")
+        })
         .catch(function(error) {
           var errorCode = error.code;
           var errorMessage = error.message;
           console.log(errorCode);
+          component.$firestore.collection("users").add({username: component.username, business: component.businessname, address: component.address })
           console.log(errorMessage);
         });
     }

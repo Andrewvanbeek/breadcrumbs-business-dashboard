@@ -78,6 +78,9 @@ export default {
       component.$firebase
         .auth()
         .signInWithEmailAndPassword(component.username, component.password)
+        .then(function() {
+            component.$router.go("/")
+        })
         .catch(function(error) {
           var errorCode = error.code;
           var errorMessage = error.message;
