@@ -91,18 +91,19 @@ export default {
     }
   }),
   methods: {
-    register() {
+    async register() {
       var component = this;
       component.$firebase
         .auth()
-        .createUserWithEmailAndPassword(component.username, component.password).then(function(){
-            component.router.go("/")
+        .createUserWithEmailAndPassword(component.username, component.password).then(async function (user) {
+            console.log(user.user.uid)
+            await component.$firestore.collection("users").doc(user.user.uid).set({username: component.username, business: component.businessname, address: component.address, id: user.user.uid})
+           component.$router.go("/")
         })
         .catch(function(error) {
           var errorCode = error.code;
           var errorMessage = error.message;
           console.log(errorCode);
-          component.$firestore.collection("users").add({username: component.username, business: component.businessname, address: component.address })
           console.log(errorMessage);
         });
     }

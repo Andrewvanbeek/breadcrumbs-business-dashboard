@@ -2,7 +2,7 @@
   <v-data-table :headers="headers" :items="desserts" sort-by="calories" class="elevation-1">
     <template v-slot:top>
       <v-toolbar flat color="white">
-        <v-toolbar-title>Tables at Your Restaurant</v-toolbar-title>
+        <v-toolbar-title>Tables at {{business}}</v-toolbar-title>
         <v-divider class="mx-4" inset vertical></v-divider>
         <v-spacer></v-spacer>
         <v-dialog v-model="dialog" max-width="500px">
@@ -62,6 +62,8 @@ export default {
       { text: "Occupancy Number", value: "occupancy" },
       { text: "Actions", value: "actions", sortable: false }
     ],
+    business: "",
+    businessAddress: "",
     desserts: [],
     editedIndex: -1,
     editedItem: {
@@ -85,18 +87,16 @@ export default {
       val || this.close();
     }
   },
-
-  created() {
-    this.initialize();
-  },
-
   methods: {
-    initialize() {
+   async initialize() {
       var component = this;
       var tables = [];
-      component.$firestore
-        .collection("tables")
-        .get()
+      var uid = component.$firebase.auth().currentUser.uid
+      var user = await component.$firestore.collection("users").doc(uid).get()
+      user = await user.data() //andrewvan beek business is cool business, the address business
+      component.business = user.business
+      component.businessAddress = user.address
+      component.$firestore.collection("tables").where("business", "==", user.business).get()
         .then(querySnapshot => {
           querySnapshot.forEach(doc => {
             var tableData = doc.data();
@@ -108,6 +108,7 @@ export default {
             tables.push(table);
           });
         });
+        console.log(tables)
       component.desserts = tables;
     },
 
@@ -141,9 +142,11 @@ export default {
       });
     },
 
-    save() {
+    async save() {
       var component = this;
       if (this.editedIndex > -1) {
+        this.editedItem.business = component.business
+        this.editedItem.businessAddress = component.address
         var tableRef = component.$firestore
           .collection("tables")
           .doc(this.editedItem.id);
@@ -161,11 +164,17 @@ export default {
             console.error("Error updating document: ", error);
           });
       } else {
+        this.editedItem.business = component.business
+        this.editedItem.businessAddress = component.businessAddress
+        var addedTable = await component.$firestore.collection("tables").add(this.editedItem);
+        this.editedItem.id = addedTable.id
         this.desserts.push(this.editedItem);
-        component.$firestore.collection("tables").add(this.editedItem);
       }
       this.close();
     }
+  },
+  async mounted() {
+    this.initialize()
   }
 };
 </script>
