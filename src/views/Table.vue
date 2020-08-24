@@ -59,7 +59,7 @@ export default {
         value: "id"
       },
       { text: "Last Visit", value: "timestamp" },
-      { text: "Status", value: "status" },
+      { text: "Covid Status", value: "status" },
       { text: "Actions", value: "actions", sortable: false }
     ],
     desserts: [],
@@ -129,7 +129,7 @@ export default {
         customers =  customers.docs.map(function(doc) {
           var customerdata = doc.data()
           console.log(customerdata)
-          return {"id": customerdata.user, "timestamp": customerdata.visit_date.toDate(), status: customerdata.has_covid}
+          return {"id": customerdata.user, "timestamp": customerdata.visit_date.toDate(), status: customerdata.has_covid ? "Covid 19 Postive! Notify Staff" : "No Covid"}
         });
         console.log(customers)
         component.desserts = customers
