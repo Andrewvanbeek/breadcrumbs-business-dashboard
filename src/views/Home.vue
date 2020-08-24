@@ -147,6 +147,7 @@ export default {
       if (this.editedIndex > -1) {
         this.editedItem.business = component.business
         this.editedItem.businessAddress = component.address
+        this.editedItem.owner = await component.$firebase.auth().currentUser.email
         var tableRef = component.$firestore
           .collection("tables")
           .doc(this.editedItem.id);
@@ -164,8 +165,10 @@ export default {
             console.error("Error updating document: ", error);
           });
       } else {
+        console.log(component.$firebase.auth().currentUser)
         this.editedItem.business = component.business
         this.editedItem.businessAddress = component.businessAddress
+        this.editedItem.owner = await component.$firebase.auth().currentUser.email
         var addedTable = await component.$firestore.collection("tables").add(this.editedItem);
         this.editedItem.id = addedTable.id
         this.desserts.push(this.editedItem);

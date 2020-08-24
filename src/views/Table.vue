@@ -59,6 +59,7 @@ export default {
         value: "id"
       },
       { text: "Last Visit", value: "timestamp" },
+      { text: "Status", value: "status" },
       { text: "Actions", value: "actions", sortable: false }
     ],
     desserts: [],
@@ -102,6 +103,8 @@ export default {
         .get()
         .then(function(doc) {
           if (doc.exists) {
+            var customers = doc.collection
+            console.log(customers)
             component.table = doc.data();
             console.log("Document data:", doc.data());
           } else {
@@ -115,12 +118,21 @@ export default {
         .collection("users")
         .get()
         .then(querySnapshot => {
-          querySnapshot.forEach(doc => {
+          querySnapshot.forEach(async function(doc) {
               console.log(doc)
-            users.push({ id: doc.id, timestamp: doc.data().timestamp });
+            users.push({ id: doc.id, timestamp: doc.data().timestamp, status: doc.data().user_metadata.has_covid });
           });
         });
-        component.desserts = users
+
+        var customers = await this.$firestore.collection("tables").doc(doc).collection("customers").get()
+
+        customers =  customers.docs.map(function(doc) {
+          var customerdata = doc.data()
+          console.log(customerdata)
+          return {"id": customerdata.user, "timestamp": customerdata.visit_date.toDate(), status: customerdata.has_covid}
+        });
+        console.log(customers)
+        component.desserts = customers
     },
 
     editItem(item) {
